@@ -1,0 +1,8 @@
+SQLAlchemy==2.0.27
+psycopg2-binary==2.9.6
+openai
+pandas
+langchain
+langchain_openai
+langchain_community
+redis

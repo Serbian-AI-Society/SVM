@@ -1,0 +1,57 @@
+services:
+  # db:
+  #   container_name: db
+  #   build: ./db
+  #   restart: always
+  #   ports:
+  #    - 5432:5432
+  #   environment:
+  #    - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis_vector_db
+    ports:
+      - 6379:6379    # Expose Redis server port
+    # volumes:
+    #   - ./local-data:/data  # Persist data to local directory
+
+  app:
+    container_name: app
+    build: ./app
+    depends_on:
+     - redis
+    stdin_open: true
+    tty: true
+    restart: always
+    ports:
+     - 8080:8080
+    volumes:
+     - ./app/:/app
+    environment:
+     - DB_USER_NAME=postgres
+     - DB_PASSWORD=postgres
+     - DB_SERVER_NAME=db
+     - DB_PORT=5432
+     - DB_DATABASE_NAME=svm_db
+     - OPENAI_API_KEY=${OPENAI_API_KEY}
+     - REDIS_HOST=redis
+     - REDIS_PORT=6379
+     - REDIS_SSL=false
+     - REDIS_USERNAME=default
+     - REDIS_PASSWORD=root
+     - INDEX_NAME=rag-redis
+     - REDIS_URL=redis://default:root@redis:6379
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    depends_on:
+      - app
+    stdin_open: true
+    tty: true
+    restart: always
+    ports:
+      - 8501:8501
+    volumes:
+      - ./frontend/:/frontend
