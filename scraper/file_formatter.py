@@ -41,7 +41,6 @@ class Place:
 
 def format_place_details(place_data: dict) -> dict:
     formatted_place = {k: v for k, v in place_data.items() if k in RELEVANT_KEYS}
-    formatted_place = asdict(Place(**formatted_place))
     if (geometry := formatted_place.get("geometry")) and (location := geometry.get("location")):
         formatted_place["geometry"] = f"Latitude: {location.get('lat')}, Longitude: {location.get('lng')}"
     if (opening_hours := formatted_place.get("opening_hours")) and (weekdays := opening_hours.get("weekday_text")):
@@ -50,12 +49,15 @@ def format_place_details(place_data: dict) -> dict:
         serialized_review = ""
         for review in reviews:
             rating, text, time = review.get('rating'), review.get('text'), review.get('time')
+            if not isinstance(time, str):
+                time = datetime.fromtimestamp(time).isoformat()
             if text:
-                serialized_review += f"{rating = }, {text = }, time: {datetime.fromtimestamp(time).isoformat()};"
+                serialized_review += f"{rating = }, {text = }, time = {time};"
 
         formatted_place["reviews"] = serialized_review
     if types := formatted_place.get("types"):
         formatted_place["types"] = ", ".join(types)
+    formatted_place = asdict(Place(**formatted_place))
     return formatted_place
 
 

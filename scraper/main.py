@@ -3,7 +3,8 @@ import requests
 import json
 import numpy as np
 import os
-from file_formatter import format_all_places
+from reviews_scraper import GoogleMapsAPIScraper
+import re
 
 
 def get_places(api_key, location, radius, type):
@@ -33,6 +34,52 @@ def get_place_reviews_and_details(api_key, place_id):
         return []
 
     return response.json().get("result", {})
+
+
+def get_reviews(place_id, max_reviews=20, language='en', sort_by='most_relevant'):
+    place_url = f'https://www.google.com/maps/place/?q=place_id:{place_id}'
+
+    # Get the place url
+    while True:
+        response = requests.get(place_url)
+        if response.status_code != 200:
+            print("Error fetching place details. Retrying...")
+            time.sleep(2)
+        else:
+            break
+    
+    # Patern for the feature id extraction
+    pattern = r'0[xX][0-9a-fA-F]+:0[xX][0-9a-fA-F]+'
+    matches = re.findall(pattern, response.text)
+    
+    if len(matches) == 0:
+        print("No feature id found: ", place_url)
+        return
+
+    reviews = []
+    with GoogleMapsAPIScraper() as scraper:
+        results = scraper.scrape_reviews(
+            url_name=restaurant.get("name"),
+            n_reviews=max_reviews,
+            hl=language,
+            feature_id=matches[0],
+            sort_by=sort_by
+        )
+        
+        for result in results:
+            # Get translated text if available
+            result_text = result.get("text")
+            if result.get("translated_text"):
+                result_text = result.get("translated_text")
+
+            review = {
+                "rating": result.get("rating"),
+                "text": result_text,
+                "time": result.get("text_date")
+            }
+            reviews.append(review)
+
+    return reviews
 
 
 def f_bg_pins():
@@ -67,6 +114,7 @@ if __name__ == "__main__":
     if not API_KEY:
         raise ValueError("GMAP_API_KEY environment variable is not set")
     radius = 2400  # Search radius in meters
+    max_review = 10
     types = ["restaurant", "bar"]  # Types of places to search for
     bg_pins, lat_distance, lon_distance = f_bg_pins()
     places_g = {}
@@ -95,16 +143,19 @@ if __name__ == "__main__":
             for restaurant in restaurants:
                 place_id = restaurant.get("place_id")
                 reviews_and_details = get_place_reviews_and_details(API_KEY, place_id)
-                print(f"Reviews for", restaurant.get("name"))
-                for review in reviews_and_details.get("reviews", []):
-                    author = review.get("author_name")
-                    rating = review.get("rating")
-                    text = review.get("text")
-                    print(f"Author: {author}")
-                    print(f"Rating: {rating}")
-                    print(f"Text: {text}")
-                    print("-" * 40)
-                print("=" * 80)
+                if max_review > 5:
+                    reviews_and_details["reviews"] = get_reviews(place_id, max_reviews=max_review)
+                reviews_and_details["map_url"] = f"https://www.google.com/maps/place/?q=place_id:{place_id}"
+                # print(f"Reviews for", restaurant.get("name"))
+                # for review in reviews_and_details.get("reviews", []):
+                #     author = review.get("author_name")
+                #     rating = review.get("rating")
+                #     text = review.get("text")
+                #     print(f"Author: {author}")
+                #     print(f"Rating: {rating}")
+                #     print(f"Text: {text}")
+                #     print("-" * 40)
+                # print("=" * 80)
                 with open(directory_path + f"{place_type}_{place_id}.json", "w") as fp:
                     json.dump(reviews_and_details, fp)
                 places_g[place_id] = reviews_and_details
