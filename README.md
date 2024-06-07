@@ -14,6 +14,11 @@ pre-commit install
 docker compose -f docker-compose.yml up --build
 ```
 
+## Export API
+```
+export OPENAI_API_KEY=<YOUR API KEY>
+```
+
 ## Scraping
 Scraping is done on Google Maps API, it requires their API KEY.
 ```

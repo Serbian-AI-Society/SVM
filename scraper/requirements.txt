@@ -3,3 +3,4 @@ botasaurus
 botasaurus-server
 dateutils
 tqdm
+openai
