@@ -4,3 +4,4 @@ botasaurus-server
 dateutils
 tqdm
 openai
+bs4

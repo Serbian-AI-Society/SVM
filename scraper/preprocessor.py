@@ -8,7 +8,6 @@ import openai
 from bs4 import BeautifulSoup
 import time
 
-
 wolt_names = {
     "restoran-oliva": "oliva",
     "walter-bbq": "walter",
@@ -19,20 +18,20 @@ wolt_names = {
     "di-napoli---pizzeria-ristorantino": "di-napoli",
     "„пролеће“": "restoran-prolee",
     "bigpizza---dostava-beograd-autokomanda": "big-pizza-autokomanda",
-	"mcdonald's-fontana": "mcdonalds-fontana",
-	"black---white-kineska-brza-hrana": "black-white-zorana-inia",
-	"dogma-brewery-&-tap-room": "dogma",
-	"pane-e-vino,-west-65": "pane-e-vino",
+    "mcdonald's-fontana": "mcdonalds-fontana",
+    "black---white-kineska-brza-hrana": "black-white-zorana-inia",
+    "dogma-brewery-&-tap-room": "dogma",
+    "pane-e-vino,-west-65": "pane-e-vino",
 }
 
 
 def remove_html_tags(html_string):
     # Parse the HTML content
     soup = BeautifulSoup(html_string, 'html.parser')
-    
+
     # Extract the text without HTML tags
     text = soup.get_text(separator="\n", strip=True)
-    
+
     return text
 
 
@@ -43,7 +42,8 @@ if __name__ == "__main__":
 
     wolt_base_url = "https://wolt.com/en/geo/batumi/restaurant/"
 
-    restaurants_with_website = [place for place in restaurants_and_bars if ('restaurant' in place["types"]) and place["website"]]
+    restaurants_with_website = [place for place in restaurants_and_bars if
+                                ('restaurant' in place["types"]) and place["website"]]
     print("Total restaurants with website: ", len(restaurants_with_website))
     selected_restaurants = []
     for i, restaurant in enumerate(restaurants_with_website):
@@ -54,7 +54,13 @@ if __name__ == "__main__":
             if response.status_code != 200:
                 print(f'#{i} website response failed {restaurant["website"]}, response code: {response.status_code}')
                 continue
-
+            # Get the summary from the website
+            restaurant["website_summary"] = summarize_html(remove_html_tags(response.text))
+            restaurant["reviews"] = summarize_reviews(restaurant["reviews"])
+            restaurant["wolt_summary"] = ""
+            restaurant["wolt_url"] = ""
+            selected_restaurants.append(restaurant)
+            print(f"Restaurant {restaurant['name']} saved successfully, size: {len(selected_restaurants)}")
             # Checking wolt response
             wolt_name = restaurant["name"].lower().replace(' ', '-')
             if wolt_name in wolt_names:
@@ -65,17 +71,14 @@ if __name__ == "__main__":
             if wolt_response.status_code != 200:
                 print(f'#{i} wolt response failed {wolt_url}, response code: {wolt_response.status_code}')
                 continue
-            
-            # Get the summary from the website
-            restaurant["website_summary"] = summarize_html(remove_html_tags(response.text))
+            # Get the summary from wolt
             restaurant["wolt_summary"] = summarize_wolt(remove_html_tags(wolt_response.text))
-            restaurant["reviews"] = summarize_reviews(restaurant["reviews"])
-            selected_restaurants.append(restaurant)
-            print(f"Restaurant {restaurant['name']} saved successfully, size: {len(selected_restaurants)}")
+            restaurant["wolt_url"] = wolt_url
+            print(f"For restaurant {restaurant['name']} saved wolt summary, size: {len(selected_restaurants)}")
 
-            # Number of restaurants to be saved
-            if len(selected_restaurants) > 100:
-                break
+            # # Number of restaurants to be saved
+            # if len(selected_restaurants) > 100:
+            #     break
         except requests.ConnectionError as e:
             print("Connection unavailable")
             time.sleep(5)
@@ -93,5 +96,5 @@ if __name__ == "__main__":
             print("Rate limit error occurred: " + str(e))
             continue
 
-    with open(data_path + 'selected_restaurants.json', 'w', encoding='utf-8') as json_file:
-        json.dump(selected_restaurants, json_file, indent=4, ensure_ascii=False)
+    with open(data_path + 'selected_restaurants.json', 'w', encoding='utf-8') as fp:
+        json.dump(selected_restaurants, fp, indent=4, ensure_ascii=False)
