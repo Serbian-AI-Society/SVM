@@ -1,7 +1,7 @@
 from openai import OpenAI
 
 
-def get_completion_from_messages(user_message, model="gpt-4o") -> str:
+def summarize_html(user_message, model="gpt-4o") -> str:
     system_prompt = """You are a helpful assistant that can provide a summary about the restaurant
     based on it's HTML home page information about restaurants html page. Try to extract
     information such as type of the restaurant, what kind of food they serve etc.
@@ -22,4 +22,4 @@ if __name__ == "__main__":
     # read a txt file content
     with open("scraper/data/restaurant.txt", "r") as file:
         user_message = file.read()
-    print(get_completion_from_messages(user_message))
+    print(summarize_html(user_message))
