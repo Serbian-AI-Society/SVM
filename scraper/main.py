@@ -5,6 +5,7 @@ import numpy as np
 import os
 from reviews_scraper import GoogleMapsAPIScraper
 import re
+from tqdm import tqdm
 
 
 def get_places(api_key, location, radius, type):
@@ -126,6 +127,7 @@ if __name__ == "__main__":
         print(f"Created directory {directory_path}")
 
     # Get places for each pin
+    progress_bar = tqdm(total=len(bg_pins) * len(types), desc="Processing")
     for place_type in types:
         print("=" * 80)
         print("Place type: ", place_type)
@@ -165,6 +167,7 @@ if __name__ == "__main__":
                 redo_w_shift = True
             else:
                 iter += 1
+                progress_bar.update(1)
                 redo_w_shift = False
         print("Found ", len(places_g), " places for type ", place_type)
 

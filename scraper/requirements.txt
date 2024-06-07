@@ -2,3 +2,4 @@ numpy
 botasaurus
 botasaurus-server
 dateutils
+tqdm
