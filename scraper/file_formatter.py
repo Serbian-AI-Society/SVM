@@ -5,7 +5,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Optional
 import os
 
-RELEVANT_KEYS = ["business_status", "delivery", "dine_in", "formatted_address", "formatted_phone_number",
+RELEVANT_KEYS = ["place_id", "business_status", "delivery", "dine_in", "formatted_address", "formatted_phone_number",
                  "geometry", "name", "opening_hours", "place_id", "price_level", "rating", "reservable", "reviews",
                  "serves_beer", "serves_breakfast", "serves_brunch", "serves_dinner", "serves_lunch", "serves_wine",
                  "takeout", "types", "user_ratings_total", "website", "wheelchair_accessible_entrance"]
@@ -65,14 +65,14 @@ def format_all_places(all_places: dict) -> list:
 
 if __name__ == "__main__":
     dir_path = 'scraper/data/details/'
+    data_path = 'scraper/data/'
     entries = os.listdir(dir_path)
     places = {}
     for entry in entries:
         with open(dir_path + entry, 'r') as fp:
             tmp = json.load(fp)
             places[tmp['place_id']] = tmp
-            places[tmp['place_id']].pop('place_id')
 
     final_final = format_all_places(places)
-    with open(dir_path + 'final_restaurants_and_bars.json', 'w') as fp:
+    with open(data_path + 'final_restaurants_and_bars.json', 'w') as fp:
         json.dump(final_final, fp)
