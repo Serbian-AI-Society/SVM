@@ -1,8 +1,9 @@
-import os
 import time
-
-import numpy as np
 import requests
+import json
+import numpy as np
+import os
+from file_formatter import format_all_places
 
 
 def get_places(api_key, location, radius, type):
@@ -24,16 +25,14 @@ def get_places(api_key, location, radius, type):
     return restaurants
 
 
-def get_place_reviews(api_key, place_id):
+def get_place_reviews_and_details(api_key, place_id):
     url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&key={api_key}"
     response = requests.get(url)
     if response.status_code != 200:
         print("Error fetching place details")
         return []
 
-    place_details = response.json().get("result", {})
-    reviews = place_details.get("reviews", [])
-    return reviews
+    return response.json().get("result", {})
 
 
 def f_bg_pins():
@@ -73,6 +72,11 @@ if __name__ == "__main__":
     places_g = {}
     redo_w_shift = False
 
+    directory_path = "scraper/data/details/"
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        print(f"Created directory {directory_path}")
+
     # Get places for each pin
     for place_type in types:
         print("=" * 80)
@@ -85,25 +89,25 @@ if __name__ == "__main__":
             pin_str = ",".join(map(str, pin))
 
             restaurants = get_places(API_KEY, pin_str, radius, place_type)
-            print(
-                f"{iter}: fetched {len(restaurants)} restaurants for pin {pin_str}, total: {len(places_g)}"
-            )
+            print(f"{iter}: fetched {len(restaurants)} restaurants for pin {pin_str}, total: {len(places_g)}")
 
             # Get reviews for each restaurant
             for restaurant in restaurants:
                 place_id = restaurant.get("place_id")
-                # reviews = get_place_reviews(API_KEY, place_id)
-                # print(f'Reviews for {restaurant.get("name")}:')
-                # for review in reviews:
-                #     author = review.get('author_name')
-                #     rating = review.get('rating')
-                #     text = review.get('text')
-                #     print(f'Author: {author}')
-                #     print(f'Rating: {rating}')
-                #     print(f'Text: {text}')
-                #     print('-' * 40)
-                # print('=' * 80)
-                places_g[place_id] = restaurant
+                reviews_and_details = get_place_reviews_and_details(API_KEY, place_id)
+                print(f"Reviews for", restaurant.get("name"))
+                for review in reviews_and_details.get("reviews", []):
+                    author = review.get("author_name")
+                    rating = review.get("rating")
+                    text = review.get("text")
+                    print(f"Author: {author}")
+                    print(f"Rating: {rating}")
+                    print(f"Text: {text}")
+                    print("-" * 40)
+                print("=" * 80)
+                with open(directory_path + f"{place_type}_{place_id}.json", "w") as fp:
+                    json.dump(reviews_and_details, fp)
+                places_g[place_id] = reviews_and_details
 
             if len(restaurants) == 60 and not redo_w_shift:
                 print(" - Shifting pin")
@@ -112,4 +116,7 @@ if __name__ == "__main__":
                 iter += 1
                 redo_w_shift = False
         print("Found ", len(places_g), " places for type ", place_type)
+
     print(f"Total places: {len(places_g)}")
+
+
