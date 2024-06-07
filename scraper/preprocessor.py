@@ -94,4 +94,4 @@ if __name__ == "__main__":
             continue
 
     with open(data_path + 'selected_restaurants.json', 'w', encoding='utf-8') as json_file:
-        json.dump(selected_restaurants, fp, indent=4, ensure_ascii=False)
+        json.dump(selected_restaurants, json_file, indent=4, ensure_ascii=False)
