@@ -1,20 +1,9 @@
 services:
-  # db:
-  #   container_name: db
-  #   build: ./db
-  #   restart: always
-  #   ports:
-  #    - 5432:5432
-  #   environment:
-  #    - POSTGRES_PASSWORD=postgres
-
   redis:
     image: redis/redis-stack-server:latest
     container_name: redis_vector_db
     ports:
       - 6379:6379    # Expose Redis server port
-    # volumes:
-    #   - ./local-data:/data  # Persist data to local directory
 
   app:
     container_name: app

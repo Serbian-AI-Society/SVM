@@ -4,7 +4,7 @@ from langchain_community.vectorstores import Redis
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough
+from langchain_core.runnables import Runnable, RunnableParallel, RunnablePassthrough
 
 from .config import INDEX_NAME, INDEX_SCHEMA, REDIS_URL
 
@@ -12,6 +12,13 @@ from .config import INDEX_NAME, INDEX_SCHEMA, REDIS_URL
 # Make this look better in the docs.
 class Question(BaseModel):
     __root__: str
+
+
+class PrintContext(Runnable):
+    def invoke(self, input1, input2):
+        print("Input1:", input1)
+        print("Input2:", input2)
+        return input1
 
 
 def init_chain() -> RunnableParallel:
@@ -25,14 +32,24 @@ def init_chain() -> RunnableParallel:
         embedding=embedder, index_name=INDEX_NAME, schema=INDEX_SCHEMA, redis_url=REDIS_URL
     )
     # TODO allow user to change parameters
-    retriever = vectorstore.as_retriever(search_type="mmr")
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
 
     # Define our prompt
     template = """
-    Use the following pieces of context from the stort about the rabbit
-    to answer the question. Do not make up an answer if there is no
-    context provided to help answer it. Include the 'source' and 'start_index'
-    from the metadata included in the context you used to answer the question
+    Ti si korisni asistent koji zna mnogo o restoranima i može da preporučiš gde da se jede.
+    Na osnovu ponudjenih restorana izaberi nekoliko koji najbolje odgovaraju korisnikovom upitu
+    i koji su najbolje ocenjeni.
+    Uvek prikazi sledece:
+    ime restorana,
+    ocenu i zvezdicu pored ocene,
+    cenovni rang,
+    google maps url,
+    sazetak dostupnih jela,
+    šta ljudi kažu o restoranu.
+    Ako ne mozes da pronadjes restoran koji odgovara korisnikovom upitu, nemoj ga predlagati.
+    Ako imas dovoljno predloga koji zadovoljavaju kriterijume, predlozi 5 restorana.
+    Sortiraj restorane po oceni opadajuće.
+    Uvek odgovaraj na srpskom jeziku.
 
     Context:
     ---------
@@ -48,9 +65,12 @@ def init_chain() -> RunnableParallel:
     prompt = ChatPromptTemplate.from_template(template)
 
     # RAG Chain
-    model = ChatOpenAI(model_name="gpt-4o")
+    model = ChatOpenAI(
+        model_name="gpt-4o", api_key="sk-proj-YbbqGIKc845hfvwMHOo3T3BlbkFJQxgvepamvTYPajdLhWW4"
+    )
     chain = (
         RunnableParallel({"context": retriever, "question": RunnablePassthrough()})
+        # | PrintContext()
         | prompt
         | model
         | StrOutputParser()

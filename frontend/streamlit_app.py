@@ -2,13 +2,11 @@ import requests
 import streamlit as st
 
 # Data
-QUERY_SUGGESTIONS = ["Jeo bih nesto kul", 
-                     "Nesto bezglutensko",
-                     "Jako mi se jede kuvano"]
+QUERY_SUGGESTIONS = ["Jede mi se sushi", "Nesto bezglutensko", "Jako mi se jede kuvano"]
 WARNING_MESSAGE = """
 Pazi da se ne prejedes!"""
 AUTHORS = """"""
-AUTHORS="""
+AUTHORS = """
 - [Emanuilo Jovanović](https://www.linkedin.com/in/emanuilo-jovanovic-112b7713a/)
 - [Marko Nikić](https://www.linkedin.com/in/marko-nikic-471374229/)
 - [Milan Lazarević](https://www.linkedin.com/in/mrlaki5/)
@@ -21,7 +19,7 @@ st.write("Pitaj me za preporuku restorana 🍔")
 st.divider()
 
 # Initialize session state for the selected suggestion
-if 'selected_suggestion' not in st.session_state:
+if "selected_suggestion" not in st.session_state:
     st.session_state.selected_suggestion = ""
 
 # Sidebar

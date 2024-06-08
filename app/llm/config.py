@@ -28,8 +28,8 @@ def get_boolean_env_var(var_name, default_value=False):
 
 
 # Check for openai API key
-if "OPENAI_API_KEY" not in os.environ:
-    raise Exception("Must provide an OPENAI_API_KEY as an env var.")
+# if "OPENAI_API_KEY" not in os.environ:
+#     raise Exception("Must provide an OPENAI_API_KEY as an env var.")
 
 
 # Whether or not to enable langchain debugging
