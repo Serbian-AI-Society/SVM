@@ -1,4 +1,4 @@
-<p align="center"><img src="frontend/static/icon.ico" width="15%"/></p>
+<p align="center"><img src="doc/images/logo.webp" width="20%" style="border-radius: 50%;"/></p>
 
 # Gde na klopu
 Aplikacija koja koristi AI agente kako bi vam pružila preporuke o mestima za jelo u jednom gradu. Aplikacija vam omogućava da pošaljete poruku sa željenom hranom, a naši AI agenti će vam dati predloge restorana i drugih mesta gde možete pronaći tu hranu.
@@ -76,6 +76,9 @@ Naša aplikacija omogućava korisnicima interakciju sa sistemom putem jednostavn
 <p align="center">
     <img src="doc/images/system-architecture.jpg" width="80%"/>
 </p>
+
+* **Dockerizacija za lak deplojment i skaliranje**
+    * Cela aplikacija je dockerizovana, što omogućava lak i brz deplojment, kao i skaliranje sistema prema potrebama. Dockerizacija obezbeđuje konzistentnost okruženja i olakšava upravljanje aplikacijom, bez obzira na infrastrukturu na kojoj se pokreće.
 
 ## Tim
 👤 [Emanuilo Jovanović](https://www.linkedin.com/in/emanuilo-jovanovic-112b7713a/) - *Senior ML Engineer* </br>
