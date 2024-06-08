@@ -28,3 +28,6 @@ python3 scraper/main.py
 
 ## Usage
 - Open your browser and go to `http://localhost:8501/`
+
+![data scraping](doc/images/data-preparation.jpg)
+![system architecture](doc/images/system-architecture.jpg)
